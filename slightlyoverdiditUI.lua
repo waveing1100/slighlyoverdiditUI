@@ -1,79 +1,198 @@
--- SlightlyOverdidIt UI | Custom Rayfield-like remake
+-- SlightlyOverdidIt UI | Stylish Rayfield-style remake
 local SlightlyOverdidIt = {}
 SlightlyOverdidIt.__index = SlightlyOverdidIt
 
 -- Services
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
--- Screen GUI
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "SlightlyOverdidItUI"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
-
--- Main Window
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 500, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -250, 0.5, -200)
-MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-MainFrame.BorderSizePixel = 0
-MainFrame.Parent = ScreenGui
-
--- Title
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 50)
-Title.BackgroundTransparency = 1
-Title.Text = "SlightlyOverdidIt UI"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 24
-Title.Parent = MainFrame
-
--- Section Example
-local function CreateSection(name)
-    local section = Instance.new("Frame")
-    section.Size = UDim2.new(1, -20, 0, 100)
-    section.Position = UDim2.new(0, 10, 0, 60)
-    section.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    section.BorderSizePixel = 0
-    section.Parent = MainFrame
-
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 0, 25)
-    label.Position = UDim2.new(0, 0, 0, 0)
-    label.BackgroundTransparency = 1
-    label.Text = name
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.Font = Enum.Font.GothamBold
-    label.TextSize = 18
-    label.Parent = section
-
-    return section
+-- Helper function
+local function Create(inst, props)
+    local obj = Instance.new(inst)
+    for k,v in pairs(props) do obj[k] = v end
+    return obj
 end
 
--- Button Example
-local function CreateButton(section, name, callback)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0, 150, 0, 40)
-    button.Position = UDim2.new(0, 10, 0, 35)
-    button.BackgroundColor3 = Color3.fromRGB(100, 100, 250)
-    button.Text = name
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.Font = Enum.Font.Gotham
-    button.TextSize = 16
-    button.Parent = section
+-- Notification system
+local function Notify(title, content, duration)
+    local ScreenGui = Players.LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("SlightlyOverdidItUI_Notifications")
+    if not ScreenGui then
+        ScreenGui = Create("ScreenGui", {Name = "SlightlyOverdidItUI_Notifications", Parent = Players.LocalPlayer:WaitForChild("PlayerGui")})
+    end
 
-    button.MouseButton1Click:Connect(function()
-        callback()
+    local notif = Create("Frame", {
+        Size = UDim2.new(0, 250, 0, 70),
+        Position = UDim2.new(1, -260, 0.5, -35),
+        BackgroundColor3 = Color3.fromRGB(40,40,40),
+        BorderSizePixel = 0,
+        Parent = ScreenGui
+    })
+    notif.AnchorPoint = Vector2.new(1,0.5)
+    notif.BackgroundTransparency = 1
+
+    TweenService:Create(notif, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
+
+    local titleLabel = Create("TextLabel", {
+        Text = title,
+        Font = Enum.Font.GothamBold,
+        TextColor3 = Color3.fromRGB(255,255,255),
+        TextSize = 18,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1,0,0,25),
+        Parent = notif
+    })
+
+    local contentLabel = Create("TextLabel", {
+        Text = content,
+        Font = Enum.Font.Gotham,
+        TextColor3 = Color3.fromRGB(200,200,200),
+        TextSize = 14,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1,0,1, -25),
+        Position = UDim2.new(0,0,0,25),
+        Parent = notif
+    })
+
+    delay(duration or 3, function()
+        TweenService:Create(notif, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+        wait(0.3)
+        notif:Destroy()
     end)
 end
 
--- Example usage
-local mainSection = CreateSection("Main Controls")
-CreateButton(mainSection, "Click Me", function()
-    print("Button clicked!")
-end)
+-- Main API
+function SlightlyOverdidIt:CreateWindow(options)
+    local Window = {}
+    Window.__index = Window
 
-return SlightlyOverdidIt
+    local ScreenGui = Create("ScreenGui", {Name = options.Name or "SlightlyOverdidItUI", ResetOnSpawn = false, Parent = Players.LocalPlayer:WaitForChild("PlayerGui")})
+    local MainFrame = Create("Frame", {
+        Size = UDim2.new(0, 500, 0, 400),
+        Position = UDim2.new(0.5, -250, 0.5, -200),
+        BackgroundColor3 = Color3.fromRGB(35,35,35),
+        BorderSizePixel = 0,
+        Parent = ScreenGui
+    })
+    MainFrame.ClipsDescendants = true
+
+    -- Rounded corners & shadow
+    local corner = Create("UICorner", {CornerRadius = UDim.new(0, 15), Parent = MainFrame})
+    local shadow = Create("Frame", {
+        Size = UDim2.new(1, 10, 1, 10),
+        Position = UDim2.new(0,-5,0,-5),
+        BackgroundColor3 = Color3.fromRGB(0,0,0),
+        BorderSizePixel = 0,
+        Parent = MainFrame
+    })
+    shadow.ZIndex = -1
+    local shadowCorner = Create("UICorner", {CornerRadius = UDim.new(0, 15), Parent = shadow})
+    TweenService:Create(shadow, TweenInfo.new(0.5), {BackgroundTransparency = 0.5}):Play()
+
+    local Title = Create("TextLabel", {
+        Size = UDim2.new(1,0,0,50),
+        BackgroundTransparency = 1,
+        Text = options.Name or "SlightlyOverdidIt UI",
+        TextColor3 = Color3.fromRGB(255,255,255),
+        Font = Enum.Font.GothamBold,
+        TextSize = 24,
+        Parent = MainFrame
+    })
+
+    Window.Tabs = {}
+
+    -- Tab API
+    function Window:CreateTab(name)
+        local Tab = {}
+        Tab.__index = Tab
+
+        local SectionFrame = Create("ScrollingFrame", {
+            Size = UDim2.new(1, -20, 1, -60),
+            Position = UDim2.new(0,10,0,60),
+            BackgroundTransparency = 1,
+            CanvasSize = UDim2.new(0,0,0,0),
+            ScrollBarThickness = 6,
+            Parent = MainFrame
+        })
+
+        Tab.Sections = {}
+
+        -- Section creation
+        function Tab:CreateSection(sectionName)
+            local section = Create("Frame", {
+                Size = UDim2.new(1,0,0,120),
+                BackgroundColor3 = Color3.fromRGB(55,55,55),
+                BorderSizePixel = 0,
+                Parent = SectionFrame
+            })
+            local corner = Create("UICorner", {CornerRadius = UDim.new(0,10), Parent = section})
+            local label = Create("TextLabel", {
+                Size = UDim2.new(1,0,0,25),
+                BackgroundTransparency = 1,
+                Text = sectionName,
+                TextColor3 = Color3.fromRGB(255,255,255),
+                Font = Enum.Font.GothamBold,
+                TextSize = 18,
+                Parent = section
+            })
+
+            section.UIListLayout = Create("UIListLayout", {Parent = section})
+            section.UIListLayout.Padding = UDim.new(0,5)
+
+            -- Button
+            function section:CreateButton(opts)
+                local button = Create("TextButton", {
+                    Size = UDim2.new(1, -10, 0, 40),
+                    BackgroundColor3 = Color3.fromRGB(100,100,250),
+                    Text = opts.Name or "Button",
+                    TextColor3 = Color3.fromRGB(255,255,255),
+                    Font = Enum.Font.GothamBold,
+                    TextSize = 16,
+                    Parent = section
+                })
+                local corner = Create("UICorner", {CornerRadius = UDim.new(0,10), Parent = button})
+                button.MouseEnter:Connect(function()
+                    TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(120,120,255)}):Play()
+                end)
+                button.MouseLeave:Connect(function()
+                    TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(100,100,250)}):Play()
+                end)
+                button.MouseButton1Click:Connect(function()
+                    if opts.Callback then opts.Callback() end
+                    Notify("SlightlyOverdidIt", opts.Name.." clicked!", 2)
+                end)
+            end
+
+            -- Toggle
+            function section:CreateToggle(opts)
+                local toggle = Create("TextButton", {
+                    Size = UDim2.new(1,-10,0,40),
+                    BackgroundColor3 = Color3.fromRGB(250,100,100),
+                    Text = (opts.Name or "Toggle").." [OFF]",
+                    TextColor3 = Color3.fromRGB(255,255,255),
+                    Font = Enum.Font.GothamBold,
+                    TextSize = 16,
+                    Parent = section
+                })
+                local corner = Create("UICorner",{CornerRadius = UDim.new(0,10), Parent = toggle})
+                local state = false
+                toggle.MouseButton1Click:Connect(function()
+                    state = not state
+                    toggle.Text = (opts.Name or "Toggle").." ["..(state and "ON" or "OFF").."]"
+                    if opts.Callback then opts.Callback(state) end
+                    Notify("SlightlyOverdidIt", toggle.Text, 2)
+                end)
+            end
+
+            self.Sections[sectionName] = section
+            return section
+        end
+
+        self.Tabs[name] = Tab
+        return Tab
+    end
+
+    return setmetatable(Window, Window)
+end
+
+return setmetatable(SlightlyOverdidIt, SlightlyOverdidIt)
