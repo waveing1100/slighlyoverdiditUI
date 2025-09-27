@@ -1,4 +1,4 @@
--- SlightlyOverdidIt UI | Stylish Rayfield-style remake
+-- SlightlyOverdidIt UI | Stylish Rayfield-style remake with Close button
 local SlightlyOverdidIt = {}
 SlightlyOverdidIt.__index = SlightlyOverdidIt
 
@@ -90,14 +90,39 @@ function SlightlyOverdidIt:CreateWindow(options)
     TweenService:Create(shadow, TweenInfo.new(0.5), {BackgroundTransparency = 0.5}):Play()
 
     local Title = Create("TextLabel", {
-        Size = UDim2.new(1,0,0,50),
+        Size = UDim2.new(1, -50, 0, 50),
         BackgroundTransparency = 1,
         Text = options.Name or "SlightlyOverdidIt UI",
         TextColor3 = Color3.fromRGB(255,255,255),
         Font = Enum.Font.GothamBold,
         TextSize = 24,
+        Position = UDim2.new(0, 10, 0, 0),
         Parent = MainFrame
     })
+
+    -- Close button
+    local CloseButton = Create("TextButton", {
+        Size = UDim2.new(0, 40, 0, 40),
+        Position = UDim2.new(1, -50, 0, 5),
+        BackgroundColor3 = Color3.fromRGB(255,50,50),
+        Text = "X",
+        TextColor3 = Color3.fromRGB(255,255,255),
+        Font = Enum.Font.GothamBold,
+        TextSize = 20,
+        Parent = MainFrame
+    })
+    local cornerBtn = Create("UICorner", {CornerRadius = UDim.new(0,8), Parent = CloseButton})
+    CloseButton.MouseEnter:Connect(function()
+        TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255,80,80)}):Play()
+    end)
+    CloseButton.MouseLeave:Connect(function()
+        TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255,50,50)}):Play()
+    end)
+    CloseButton.MouseButton1Click:Connect(function()
+        TweenService:Create(MainFrame, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+        wait(0.3)
+        ScreenGui:Destroy()
+    end)
 
     Window.Tabs = {}
 
